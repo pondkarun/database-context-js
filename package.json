@@ -1,0 +1,23 @@
+{
+  "name": "database-context-pg",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pondkarun/database-context-js.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pondkarun/database-context-js/issues"
+  },
+  "homepage": "https://github.com/pondkarun/database-context-js#readme",
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "pg": "^8.8.0"
+  }
+}
