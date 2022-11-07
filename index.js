@@ -58,7 +58,7 @@ class DatabaseContextPostgres {
      * @returns An object with the table name and the primary key column name.
      */
     async columnsPkTable(table, schema = "public") {
-        // log
+        // log Demo
         const sql = `
         SELECT KU.table_name as TABLENAME ,column_name as PRIMARYKEYCOLUMN 
         FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS TC 
