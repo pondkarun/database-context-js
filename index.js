@@ -1,4 +1,4 @@
-const { isArray } = require('lodash');
+const { isArray, isPlainObject } = require('lodash');
 const { Client } = require('pg');
 
 class DatabaseContextPostgres {
@@ -170,6 +170,10 @@ class DatabaseContextPostgres {
                 sql += `${index === 0 ? "WHERE" : ` ${type}`} ${as_name ? `as_name.` : ""}${key} = $${value_count}`
                 value_count++
             });
+        }
+
+        if (isPlainObject(model.order_by)) {
+            sql += ` ORDER BY ${model.order_by.columns.toString()} ${model.order_by.sort_type ?? "ASC"}`
         }
         console.log(sql);
         const callback = await this.clientQuery(sql, value_list.length <= 0 ? undefined : value_list);
