@@ -165,9 +165,9 @@ class DatabaseContextPostgres {
         let value_count = 1, value_list = [];
         if (isArray(model.where)) {
             model.where.forEach((item, index) => {
-                const key = item.key, value = item.value, as_name = item.as ?? null, type = item.type ?? "AND"
+                const key = item.key, value = item.value, as_name = item.as ?? null, type = item.type ?? "AND", operator = item.operator ?? "="
                 value_list.push(value)
-                sql += `${index === 0 ? "WHERE" : ` ${type}`} ${as_name ? `as_name.` : ""}${key} = $${value_count}`
+                sql += `${index === 0 ? "WHERE" : ` ${type}`} ${as_name ? `as_name.` : ""}${key} ${operator} $${value_count}`
                 value_count++
             });
         }
