@@ -7,9 +7,9 @@ class DatabaseContextPostgres {
     /**
      * The constructor function is a function that is called when a new object is created
      */
-    constructor({ user, host, database, password, port = 5432, max = 10, idleTimeoutMillis = 30000, connectionTimeoutMillis = 5000 }) {
+    constructor({ user, host, database, password, port = 5432, max = 10, idleTimeoutMillis = 30000, connectionTimeoutMillis = 5000, ssl }) {
         this.connectionConfig = {
-            user, host, database, password, port, max, idleTimeoutMillis, connectionTimeoutMillis
+            user, host, database, password, port, max, idleTimeoutMillis, connectionTimeoutMillis, ssl
         }
     }
 
