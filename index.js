@@ -1,50 +1,40 @@
 const { isArray, isPlainObject } = require('lodash');
-const { Client } = require('pg');
+const { Pool } = require('pg');
 
 class DatabaseContextPostgres {
-
 
     /**
      * The constructor function is a function that is called when a new object is created
      */
     constructor({ user, host, database, password, port = 5432, max = 10, idleTimeoutMillis = 30000, connectionTimeoutMillis = 5000, ssl }) {
-        this.connectionConfig = {
-            user, host, database, password, port, max, idleTimeoutMillis, connectionTimeoutMillis, ssl
-        }
+        this.pool = new Pool({
+            user,
+            host,
+            database,
+            password,
+            port,
+            max,
+            idleTimeoutMillis,
+            connectionTimeoutMillis,
+            ssl
+        });
     }
 
     /* This is a function that is used to query the database. */
     async clientQuery(queryConfig, value) {
         return new Promise(async (resolve, reject) => {
+            const client = await this.pool.connect();
             try {
-                (async () => {
-                    const client = new Client(this.connectionConfig);
-                    await client.connect();
-                    try {
-                        const callback = await client.query(queryConfig, value);
-                        resolve(callback);
-                    } catch (e) {
-                        reject(e);
-                    } finally {
-                        await client.end();
-                    }
-                })().catch((e) => {
-                    console.log(e);
-                    // throw Error(e);
-                    reject(e);
-                });
+                const callback = await client.query(queryConfig, value);
+                resolve(callback);
             } catch (e) {
                 reject(e);
+            } finally {
+                client.release();
             }
         });
     };
 
-    /**
-     * It returns the columns of a table.
-     * @param table - The name of the table you want to get the columns from.
-     * @param [schema=public] - The schema you want to query. Defaults to public.
-     * @returns An array of objects.
-     */
     async columnsTable(table, schema = "public") {
         const sql = `SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = $1 AND table_schema = $2`
         const callback = await this.clientQuery(sql, [table, schema])
@@ -52,13 +42,12 @@ class DatabaseContextPostgres {
     }
 
     /**
-     * > This function returns the primary key column of a table
-     * @param table - The table name
-     * @param [schema=public] - The schema name. Defaults to 'public'
-     * @returns An object with the table name and the primary key column name.
-     */
+    * > This function returns the primary key column of a table
+    * @param table - The table name
+    * @param [schema=public] - The schema name. Defaults to 'public'
+    * @returns An object with the table name and the primary key column name.
+    */
     async columnsPkTable(table, schema = "public") {
-        // log Demo
         const sql = `
         SELECT KU.table_name as TABLENAME ,column_name as PRIMARYKEYCOLUMN 
         FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS AS TC 
@@ -97,12 +86,12 @@ class DatabaseContextPostgres {
     }
 
     /**
-     * > Finds a row in a table by its primary key
-     * @param table - The table name
-     * @param id - The id of the row you want to find.
-     * @param [schema=public] - The schema of the table.
-     * @returns The first row of the table that matches the primary key.
-     */
+    * > Finds a row in a table by its primary key
+    * @param table - The table name
+    * @param id - The id of the row you want to find.
+    * @param [schema=public] - The schema of the table.
+    * @returns The first row of the table that matches the primary key.
+    */
     async findByPk(table, id, schema = "public") {
         const { primarykeycolumn } = await this.columnsPkTable(table, schema);
         let sql = `SELECT * FROM ${schema}.${table} WHERE ${primarykeycolumn} = $1`;
@@ -112,14 +101,14 @@ class DatabaseContextPostgres {
     }
 
     /**
-     * It takes a table name, a model, an id, and a schema, and returns the id if the update was
-     * successful, or undefined if it wasn't
-     * @param table - The table name
-     * @param model - The object that contains the data to be updated.
-     * @param id - The id of the record to update
-     * @param [schema=public] - The schema name of the table.
-     * @returns The id of the row that was updated.
-     */
+   * It takes a table name, a model, an id, and a schema, and returns the id if the update was
+   * successful, or undefined if it wasn't
+   * @param table - The table name
+   * @param model - The object that contains the data to be updated.
+   * @param id - The id of the record to update
+   * @param [schema=public] - The schema name of the table.
+   * @returns The id of the row that was updated.
+   */
     async update(table, model, id, schema = "public") {
         const columns = [], values = [`${id}`];
 
@@ -140,12 +129,12 @@ class DatabaseContextPostgres {
     }
 
     /**
-     * > This function is used to query data from the database
-     * @param table - table name
-     * @param [model] - {
-     * @param [schema=public] - The schema name of the table.
-     * @returns The rows of the table.
-     */
+    * > This function is used to query data from the database
+    * @param table - table name
+    * @param [model] - {
+    * @param [schema=public] - The schema name of the table.
+    * @returns The rows of the table.
+    */
     async findAll(table, model = {}, schema = "public") {
         const { primarykeycolumn } = await this.columnsPkTable(table, schema);
 
@@ -191,8 +180,6 @@ class DatabaseContextPostgres {
         const callback = await this.findAll(table, model, schema);
         return callback.length > 0 ? callback[0] : undefined
     }
-
-
 }
 
 module.exports = DatabaseContextPostgres;
