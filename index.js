@@ -21,16 +21,16 @@ class DatabaseContextPostgres {
     }
 
     /* This is a function that is used to query the database. */
-    async clientQuery(queryConfig, value) {
+    async clientQuery(queryConfig, value, _client) {
         return new Promise(async (resolve, reject) => {
-            const client = await this.pool.connect();
+            const client = !_client ? await this.pool.connect() : _client;
             try {
                 const callback = await client.query(queryConfig, value);
                 resolve(callback);
             } catch (e) {
                 reject(e);
             } finally {
-                client.release();
+                if (!_client) client.release();
             }
         });
     };
