@@ -20,6 +20,12 @@ class DatabaseContextPostgres {
         });
     }
 
+    async escapeIdentifier(value, _client) {
+        const client = !_client ? await this.pool.connect() : _client;
+        const escapedIdentifier = client.escapeIdentifier(value);
+        return escapedIdentifier
+    }
+
     /* This is a function that is used to query the database. */
     async clientQuery(queryConfig, value, _client) {
         return new Promise(async (resolve, reject) => {
